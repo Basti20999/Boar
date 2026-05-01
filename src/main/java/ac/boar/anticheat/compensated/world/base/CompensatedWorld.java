@@ -17,6 +17,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.cloudburstmc.math.vector.Vector3i;
+import org.cloudburstmc.protocol.bedrock.data.BlockChangeEntry;
+import org.cloudburstmc.protocol.bedrock.packet.UpdateSubChunkBlocksPacket;
 import org.geysermc.geyser.entity.EntityDefinition;
 import org.geysermc.geyser.entity.type.Entity;
 import org.geysermc.geyser.level.BedrockDimension;
@@ -103,6 +105,34 @@ public class CompensatedWorld {
 
     public boolean isChunkLoaded(int chunkX, int chunkZ) {
         return this.getChunk(chunkX >> 4, chunkZ >> 4) != null;
+    }
+
+    public void updateBlockSections(UpdateSubChunkBlocksPacket packet) {
+        final BoarChunkSection[] column = this.getChunkSections(packet.getPosition().getX() >> 4, packet.getPosition().getZ() >> 4);
+        if (column == null) {
+            return;
+        }
+
+        int y = packet.getPosition().getY();
+        if (y < getMinY() || ((y - getMinY()) >> 4) > column.length - 1) {
+            // Y likely goes above or below the height limit of this world
+            return;
+        }
+
+        BoarChunkSection palette = column[(y - getMinY()) >> 4];
+        if (palette == null) {
+            column[(y - getMinY()) >> 4] = palette = new BoarChunkSection(this.player.BEDROCK_AIR);
+        }
+
+        for (BlockChangeEntry entry : packet.getStandardBlocks()) {
+            palette.setFullBlock(entry.getPosition().getX() & 0xF, y & 0xF,
+                    entry.getPosition().getZ() & 0xF, 0, entry.getDefinition().getRuntimeId());
+        }
+
+        for (BlockChangeEntry entry : packet.getExtraBlocks()) {
+            palette.setFullBlock(entry.getPosition().getX() & 0xF, y & 0xF,
+                    entry.getPosition().getZ() & 0xF, 1, entry.getDefinition().getRuntimeId());
+        }
     }
 
     public void updateBlock(final Vector3i position, int layer, int block) {

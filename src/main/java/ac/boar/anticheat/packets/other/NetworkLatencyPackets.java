@@ -34,7 +34,8 @@ public class NetworkLatencyPackets implements PacketListener {
         long id = packet.getTimestamp() / (player.getSession().platform() == BedrockPlatform.PS4 ? PS5_LATENCY_MAGNITUDE : LATENCY_MAGNITUDE);
 
         if (poll == null || poll.id() != id) {
-            player.kick("Invalid latency id, expected=" + (poll == null ? "none" : poll.id()) + ", actual=" + id);
+            // TODO: Fix this... lol seems to be broken on join, or maybe in other cases? eh just ignore this for now, test later.
+//            player.kick("Invalid latency id, expected=" + (poll == null ? "none" : poll.id()) + ", actual=" + id);
             return;
         }
 

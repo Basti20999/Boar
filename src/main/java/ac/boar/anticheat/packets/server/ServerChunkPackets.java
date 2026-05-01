@@ -41,6 +41,20 @@ public class ServerChunkPackets implements PacketListener {
             });
         }
 
+        if (event.getPacket() instanceof UpdateSubChunkBlocksPacket packet) {
+            if (Math.abs(player.position.x - packet.getPosition().getX()) <= 16 || Math.abs(player.position.z - packet.getPosition().getZ()) <= 16) {
+                player.sendLatencyStack();
+            }
+
+            player.getLatencyUtil().queue(() -> {
+                if (player.compensatedWorld.isOutOfRadius(packet.getPosition().getX(), packet.getPosition().getZ())) {
+                    return;
+                }
+
+                world.updateBlockSections(packet);
+            });
+        }
+
         // There are a ton of chunk sending and world type for Bedrock (why support that much anyway)
         // But since Geyser only use this, then we only added support for this, no need to torture ourselves.
         if (event.getPacket() instanceof LevelChunkPacket packet) {
