@@ -125,13 +125,11 @@ public class CompensatedWorld {
         }
 
         for (BlockChangeEntry entry : packet.getStandardBlocks()) {
-            palette.setFullBlock(entry.getPosition().getX() & 0xF, y & 0xF,
-                    entry.getPosition().getZ() & 0xF, 0, entry.getDefinition().getRuntimeId());
+            palette.setFullBlock(entry.getPosition().getX() & 0xF, entry.getPosition().getY() & 0xF, entry.getPosition().getZ() & 0xF, 0, entry.getDefinition().getRuntimeId());
         }
 
         for (BlockChangeEntry entry : packet.getExtraBlocks()) {
-            palette.setFullBlock(entry.getPosition().getX() & 0xF, y & 0xF,
-                    entry.getPosition().getZ() & 0xF, 1, entry.getDefinition().getRuntimeId());
+            palette.setFullBlock(entry.getPosition().getX() & 0xF, entry.getPosition().getY() & 0xF, entry.getPosition().getZ() & 0xF, 1, entry.getDefinition().getRuntimeId());
         }
     }
 
