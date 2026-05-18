@@ -26,18 +26,17 @@ public class PostAuthInputPackets implements PacketListener {
                 event.setCancelled(true);
             }
 
-//            if (player.getTeleportUtil().isTeleporting()) {
-//                packet.setPosition(player.position.add(0, player.getYOffset(), 0).toVector3f());
-//                LegacyAuthInputPackets.correctInputData(player, packet);
-//                return;
-//            }
-
             // Although I'd like to avoid to do this at all times, it's justttt to be safe.
             // Shouldn't desync, since we already set it to be the unvalidated position if offset is close enough
             // Look at LegacyAuthInputPackets#doPostPrediction line 58
             packet.setPosition(player.position.add(0, player.getYOffset(), 0).toVector3f());
             LegacyAuthInputPackets.correctInputData(player, packet);
 
+            // If the player is teleporting, NO PACKET SHOULD EVER PASS THROUGH. Except when they're rewinding.
+            if (player.getTeleportUtil().isHardTeleporting()) {
+                event.setCancelled(true);
+                return;
+            }
             if (player.getTeleportUtil().isTeleporting()) {
                 return;
             }
