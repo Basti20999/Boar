@@ -100,14 +100,16 @@ public final class BoarPlayer extends PlayerData {
         AIR_IDS.add(mappings.getBedrockBlockId(Blocks.CAVE_AIR.defaultBlockState().javaId()));
         AIR_IDS.add(mappings.getBedrockBlockId(Blocks.VOID_AIR.defaultBlockState().javaId()));
 
-        for (GeyserAttributeType type : GeyserAttributeType.values()) {
-            final String identifier = type.getBedrockIdentifier();
-            if (identifier == null || this.attributes.containsKey(type.getBedrockIdentifier())) {
-                continue;
-            }
-
-            this.attributes.put(identifier, new AttributeInstance(type.getDefaultValue()));
-        }
+        // Just use the one we care about for now... more can be added in later.
+        this.attributes.put(GeyserAttributeType.MOVEMENT_SPEED.getBedrockIdentifier(), new AttributeInstance(GeyserAttributeType.MOVEMENT_SPEED.getDefaultValue()));
+//        for (GeyserAttributeType type : GeyserAttributeType.values()) {
+//            final String identifier = type.getBedrockIdentifier();
+//            if (identifier == null || this.attributes.containsKey(type.getBedrockIdentifier())) {
+//                continue;
+//            }
+//
+//            this.attributes.put(identifier, new AttributeInstance(type.getDefaultValue()));
+//        }
 
 
         final Field field = GeyserSession.class.getDeclaredField("tickEventLoop");

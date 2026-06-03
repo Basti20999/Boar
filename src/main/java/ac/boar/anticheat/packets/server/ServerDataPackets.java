@@ -147,10 +147,6 @@ public class ServerDataPackets implements PacketListener {
             }
 
             player.sendLatencyStack(() -> {
-                if (player.vehicleData != null) {
-                    return;
-                }
-
                 for (final AttributeData data : packet.getAttributes()) {
                     final AttributeInstance attribute = player.attributes.get(data.getName());
                     if (attribute == null) {

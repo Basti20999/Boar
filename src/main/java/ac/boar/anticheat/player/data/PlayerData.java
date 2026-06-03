@@ -100,6 +100,12 @@ public class PlayerData {
 
     // Attribute related, abilities
     public final Map<String, AttributeInstance> attributes = new HashMap<>();
+    public Map<String, AttributeInstance> cloneAttributes() {
+        final Map<String, AttributeInstance> map = new HashMap<>();
+        attributes.forEach((k, v) -> map.put(k, v.clone()));
+        return map;
+    }
+
     public final Set<Ability> abilities = new HashSet<>();
 
     // Riptide related

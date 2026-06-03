@@ -120,8 +120,10 @@ public class TeleportHandler {
                 LegacyAuthInputPackets.processAuthInput(player, data.packet(), false);
                 LegacyAuthInputPackets.updateUnvalidatedPosition(player, packet);
 
-                // Reverted back to the old flags and dimensions.
+                // Reverted back to the old flags and dimensions and attribute.
                 player.getFlagTracker().set(player, data.flags(), false);
+                player.attributes.putAll(data.attributes());
+
                 // TODO: Is this really the case.
                 player.dimensions = data.dimensions();
             }
