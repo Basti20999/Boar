@@ -1,6 +1,7 @@
 package ac.boar.protocol;
 
 import ac.boar.anticheat.player.BoarPlayer;
+import ac.boar.geyser.GeyserBoar;
 import ac.boar.protocol.api.CloudburstPacketEvent;
 import ac.boar.protocol.api.PacketListener;
 import io.netty.buffer.ByteBuf;
@@ -20,6 +21,20 @@ public class BoarHandlerAdaptor extends MessageToMessageCodec<BedrockPacketWrapp
 
     public static final String NAME = "boar-packet-handler";
 
+    // An exception in a listener leaves the anticheat state half-updated (which can cause falses or
+    // worse, silently stop checking the player), so don't hide it completely, log it (throttled).
+    private static volatile long lastListenerError;
+
+    private static void logListenerError(Exception e) {
+        final long now = System.currentTimeMillis();
+        if (now - lastListenerError < 1000L) {
+            return;
+        }
+        lastListenerError = now;
+
+        GeyserBoar.getLogger().error("Exception in a Boar packet listener, anticheat state might be de-synced!", e);
+    }
+
     @Override
     protected void encode(ChannelHandlerContext ctx, BedrockPacketWrapper msg, List<Object> out) {
         if (player.isClosed()) {
@@ -31,7 +46,8 @@ public class BoarHandlerAdaptor extends MessageToMessageCodec<BedrockPacketWrapp
             for (final PacketListener listener : PacketEvents.getApi().getListeners()) {
                 listener.onPacketSend(event);
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            logListenerError(e);
         }
 
         if (event.isCancelled()) {
@@ -68,7 +84,8 @@ public class BoarHandlerAdaptor extends MessageToMessageCodec<BedrockPacketWrapp
             for (final PacketListener listener : PacketEvents.getApi().getListeners()) {
                 listener.onPacketReceived(event);
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            logListenerError(e);
         }
 
         if (event.isCancelled()) {

@@ -18,6 +18,12 @@ public final class Timer extends PingBasedCheck {
 
     public Timer(final BoarPlayer player) {
         super(player);
+
+        // The balance limiter already forgives everything that is explainable by latency (loseBalance),
+        // so a violation here is strong evidence already, still require a second one before alerting to
+        // survive clock jitter/scheduling hiccups. Decay is very slow on purpose: slow timers (1.001x+)
+        // only trip the limit once every couple of seconds. The setback never waits for the buffer.
+        this.buffer(2.0F, 0.002F);
     }
 
     @Override
@@ -68,6 +74,8 @@ public final class Timer extends PingBasedCheck {
                 this.loseBalance = Math.abs(this.balance);
                 this.balance = -AVERAGE_DISTANCE;
             }
+
+            this.reward();
         }
 
         this.balance -= distance - neededDistance;

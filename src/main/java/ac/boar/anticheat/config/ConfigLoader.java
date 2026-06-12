@@ -69,6 +69,9 @@ public class ConfigLoader {
                         s = s.replace("differ-till-alert: 0.0", "differ-till-alert: " + config.alertThreshold());
                         s = s.replace("debug-mode: false", "debug-mode: " + config.debugMode());
                         s = s.replace("max-latency-wait: 15000", "max-latency-wait: " + config.maxLatencyWait());
+                        s = s.replace("max-balance-advantage: 8500", "max-balance-advantage: " + config.maxBalanceAdvantage());
+                        s = s.replace("alert-cooldown: 1000", "alert-cooldown: " + config.alertCooldown());
+                        s = s.replace("log-alerts-to-console: true", "log-alerts-to-console: " + config.logAlertsToConsole());
                     }
 
                     writer.write(s.toCharArray());

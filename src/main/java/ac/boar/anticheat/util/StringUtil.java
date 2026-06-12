@@ -9,4 +9,8 @@ public class StringUtil {
 
         return split[1];
     }
+
+    public static String stripColor(final String string) {
+        return string.replaceAll("§.", "");
+    }
 }

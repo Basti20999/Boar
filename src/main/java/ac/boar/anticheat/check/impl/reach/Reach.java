@@ -31,6 +31,11 @@ public final class Reach extends PacketCheck {
 
     public Reach(BoarPlayer player) {
         super(player);
+
+        // A single hit that looks out of range can simply be entity position de-sync
+        // (interpolation, split latency, ...), require a couple of them before alerting.
+        // The hit itself still gets cancelled either way, so there is nothing to gain here.
+        this.buffer(2.0F, 0.5F);
     }
 
     @Override
@@ -91,6 +96,13 @@ public final class Reach extends PacketCheck {
             return;
         }
 
+        // Positions are not reliable while teleports are still in flight (the queued positions were
+        // captured pre-teleport) or right after a loading screen/join, don't try to judge these hits.
+        if (player.getTeleportUtil().isTeleporting() || player.inLoadingScreen || player.sinceLoadingScreen < 10 || player.tick < 10) {
+            this.queuedHitAttacks.clear();
+            return;
+        }
+
         float hitDistance = 0;
         for (Map.Entry<Pair<Vec3, Vec3>, EntityCache> entry : this.queuedHitAttacks.entrySet()) {
             final EntityCache entity = entry.getValue();
@@ -112,11 +124,14 @@ public final class Reach extends PacketCheck {
 
         if (hitDistance > Boar.getConfig().toleranceReach()) {
             if (hitDistance == Float.MAX_VALUE) {
-                this.fail("failed to find entity in sight.");
+                // Not intersecting the entity at all is the most de-sync prone case (hitbox/interpolation
+                // mismatch rather than reach), so it only counts for half a violation.
+                this.fail(0.5F, "failed to find entity in sight.");
             } else {
-                this.fail("entity out of range, distance=" + hitDistance);
+                this.fail(1.0F, "entity out of range, distance=" + hitDistance);
             }
         } else {
+            this.reward();
             Boar.debug("Valid hit distance=" + hitDistance, Boar.DebugMessage.INFO);
         }
 

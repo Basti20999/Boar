@@ -37,6 +37,12 @@ public final class Config {
     @JsonProperty("max-balance-advantage")
     @JsonSetter(nulls = Nulls.SKIP)
     private long maxBalanceAdvantage = 2000L;
+    @JsonProperty("alert-cooldown")
+    @JsonSetter(nulls = Nulls.SKIP)
+    private long alertCooldown = 1000L;
+    @JsonProperty("log-alerts-to-console")
+    @JsonSetter(nulls = Nulls.SKIP)
+    private boolean logAlertsToConsole = true;
     @JsonProperty("debug-mode")
     @JsonSetter(nulls = Nulls.SKIP)
     private boolean debugMode;
@@ -71,6 +77,14 @@ public final class Config {
 
     public long maxBalanceAdvantage() {
         return maxBalanceAdvantage;
+    }
+
+    public long alertCooldown() {
+        return Math.max(0, alertCooldown);
+    }
+
+    public boolean logAlertsToConsole() {
+        return logAlertsToConsole;
     }
 
     public boolean debugMode() {
