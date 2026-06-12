@@ -1,5 +1,8 @@
 package ac.boar.anticheat.alert;
 
+import ac.boar.anticheat.Boar;
+import ac.boar.anticheat.util.StringUtil;
+import ac.boar.geyser.GeyserBoar;
 import org.geysermc.geyser.api.command.CommandSource;
 
 import java.util.*;
@@ -15,6 +18,11 @@ public class AlertManager {
 
     public void alert(String verbose) {
         sources.values().forEach(source -> source.sendMessage(getPrefix(source) + "§3" + verbose));
+
+        // Keep a record in the console/logs even when no one is around with alerts enabled.
+        if (Boar.getConfig().logAlertsToConsole()) {
+            GeyserBoar.getLogger().info(StringUtil.stripColor(verbose));
+        }
     }
 
     public void alertToPlayers(final List<CommandSource> sources, String verbose) {

@@ -41,5 +41,14 @@ max-latency-wait: 15000
 # To disable (which you probably shouldn't), set this to any value smaller or equals to 0.
 max-balance-advantage: 8500
 
+# Minimum delay (in milliseconds) between alert messages of the same check for the same player.
+# Violations still count up (and setbacks still happen) while messages are suppressed, this only
+# stops a single player from flooding the chat/logs. Set to 0 to receive every single alert.
+alert-cooldown: 1000
+
+# Should alerts also be logged to the console? With this disabled, alerts are only sent to
+# sources that have enabled them with the alert command.
+log-alerts-to-console: true
+
 # Should debug mode be enabled or not?
 debug-mode: false

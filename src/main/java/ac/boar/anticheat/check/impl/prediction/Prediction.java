@@ -15,24 +15,35 @@ import java.util.Map;
 
 @CheckInfo(name = "Prediction")
 public class Prediction extends OffsetHandlerCheck {
+    // Mispredictions have to persist for a few ticks before we alert. Actual movement cheats
+    // (fly, speed, ...) mispredict every single tick so they still alert almost instantly, while
+    // a single-tick edge case in the simulation only gets silently corrected by the rewind.
+    private static final float BUFFER_LIMIT = 3.0F, BUFFER_DECAY = 0.25F;
+
     private final Map<String, Check> checks = new HashMap<>();
 
     public Prediction(BoarPlayer player) {
         super(player);
 
-        this.checks.put("Phase", new Check(player, "Phase", "", false));
-        this.checks.put("Velocity", new Check(player, "Velocity", "", false));
+        this.checks.put("Phase", new Check(player, "Phase", "", false, BUFFER_LIMIT, BUFFER_DECAY));
+        this.checks.put("Velocity", new Check(player, "Velocity", "", false, BUFFER_LIMIT, BUFFER_DECAY));
 
-        this.checks.put("Strafe", new Check(player, "Strafe", "", false));
-        this.checks.put("Speed", new Check(player, "Speed", "", false));
-        this.checks.put("Flight", new Check(player, "Flight", "", false));
+        this.checks.put("Strafe", new Check(player, "Strafe", "", false, BUFFER_LIMIT, BUFFER_DECAY));
+        this.checks.put("Speed", new Check(player, "Speed", "", false, BUFFER_LIMIT, BUFFER_DECAY));
+        this.checks.put("Flight", new Check(player, "Flight", "", false, BUFFER_LIMIT, BUFFER_DECAY));
 
-        this.checks.put("Collisions", new Check(player, "Collisions", "", false));
+        this.checks.put("Collisions", new Check(player, "Collisions", "", false, BUFFER_LIMIT, BUFFER_DECAY));
     }
 
     @Override
     public void onPredictionComplete(float offset) {
-        if (player.tick < 10 || offset < player.getMaxOffset()) {
+        if (player.tick < 10) {
+            return;
+        }
+
+        if (offset < player.getMaxOffset()) {
+            // Legit tick, slowly clear out evidence left behind by previous mispredictions.
+            this.checks.values().forEach(Check::reward);
             return;
         }
 

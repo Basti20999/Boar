@@ -18,6 +18,9 @@ public class BadPacketA extends PacketCheck {
         if (event.getPacket() instanceof PlayerAuthInputPacket packet) {
             if (!MathUtil.isValid(packet.getPosition()) || !MathUtil.isValid(packet.getRotation()) || !MathUtil.isValid(packet.getDelta())) {
                 fail("pos=" + packet.getPosition() + ", rot=" + packet.getRotation() + ", delta=" + packet.getDelta());
+
+                // Never let NaN/infinite values reach the prediction pipeline or Geyser, it poisons everything downstream.
+                event.setCancelled(true);
                 player.kick("Invalid auth input packet!");
             }
         }
