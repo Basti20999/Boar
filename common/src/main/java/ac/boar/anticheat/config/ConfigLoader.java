@@ -77,6 +77,12 @@ public class ConfigLoader {
                         s = s.replace("max-balance-advantage: 8500", "max-balance-advantage: " + config.maxBalanceAdvantage());
                         s = s.replace("alert-cooldown: 1000", "alert-cooldown: " + config.alertCooldown());
                         s = s.replace("log-alerts-to-console: true", "log-alerts-to-console: " + config.logAlertsToConsole());
+                        String prefix = config.prefix()
+                                .replace("\\", "\\\\")
+                                .replace("\"", "\\\"")
+                                .replace("\r", "\\r")
+                                .replace("\n", "\\n");
+                        s = s.replace("prefix: \"&3Boar &7>&r \"", "prefix: \"" + prefix + "\"");
                     }
 
                     writer.write(s.toCharArray());
