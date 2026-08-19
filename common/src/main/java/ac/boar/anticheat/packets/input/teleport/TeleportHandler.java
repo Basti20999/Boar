@@ -64,6 +64,8 @@ public class TeleportHandler {
         player.predictionResult = new PredictionData(Vec3.ZERO, Vec3.ZERO, Vec3.ZERO); // Yep!
         player.onGround = false;
 
+        player.getTeleportUtil().setLastKnowValid(data.getPosition());
+
         // I think I'm being a bit lenient but on Bedrock the position error seems to be a bit high.
         if (!packet.getInputData().contains(PlayerAuthInputData.HANDLE_TELEPORT) || distance > 1.0E-3F) {
             // Player rejected teleport OR this is not the latest teleport.
