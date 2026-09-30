@@ -26,7 +26,6 @@ import java.util.Map;
 @CheckInfo(name = "Reach")
 public final class Reach extends BaseCheck implements PacketCheck {
     private final Map<Pair<Vec3, Vec3>, EntityCache> queuedHitAttacks = new HashMap<>();
-    private boolean lastKnowHitWasValid;
 
     public Reach(BoarPlayer player) {
         super(player);
@@ -62,9 +61,8 @@ public final class Reach extends BaseCheck implements PacketCheck {
 
         if (player.inputMode == InputMode.TOUCH) {
             // Don't let player spoof this and hit out of 110 FOV range, that is not possible.
-            // However, I think this should be moved into a separate bad packet check since it's not vanilla behaviour.
+            // However, I think this should be moved into a separate bad packet check since it's not vanilla behavior.
             if (MathUtil.wrapDegrees(Math.abs(player.yaw - player.interactRotation.getY())) > 110) {
-                this.lastKnowHitWasValid = false;
                 event.setCancelled(true);
                 Boar.debug("[reach-debug] cancelled immediate reason=touch-fov runtimeId=" + packet.getRuntimeEntityId() + " yaw=" + player.yaw + " interactYaw=" + player.interactRotation.getY(), Boar.DebugMessage.WARNING);
                 return; // Invalid hit, no need to try to validate this.
@@ -77,20 +75,12 @@ public final class Reach extends BaseCheck implements PacketCheck {
         this.queuedHitAttacks.put(pair, entity);
 
         // We check in the auth input packet, but that is way too late to cancel the hit packet send to the server.
-        // One way around this however, is still perform the reach check here, if the hit was invalid and the hit before that
-        // is also invalid, then cancel. This way if player never flag then their hit won't cancel here, but if they HAD flag before
-        // then the hit will be canceled. Now technically this can be abused, but I don't really see it as a big of a deal since
-        // backtrack cheat (latency abuse) is already a thing.
+        // So we just mitigate the hit here... they won't false but their hit will be mitigated silently.
         final float immediateReach = ReachUtil.calculateReach(player, pair, entity);
-        Boar.debug("[reach-debug] attack runtimeId=" + packet.getRuntimeEntityId() + " immediateReach=" + immediateReach + " tolerance=" + Boar.getConfig().toleranceReach() + " lastKnownValid=" + this.lastKnowHitWasValid + " entityPos=" + entity.getCurrent().getPos() + " target=" + entity.getCurrent().getInterpolator().getTargetPos() + " step=" + entity.getCurrent().getInterpolator().getStep(), Boar.DebugMessage.INFO);
+        Boar.debug("[reach-debug] attack runtimeId=" + packet.getRuntimeEntityId() + " immediateReach=" + immediateReach + " tolerance=" + Boar.getConfig().toleranceReach() + " entityPos=" + entity.getCurrent().getPos() + " target=" + entity.getCurrent().getInterpolator().getTargetPos() + " step=" + entity.getCurrent().getInterpolator().getStep(), Boar.DebugMessage.INFO);
         if (immediateReach > Boar.getConfig().toleranceReach()) {
-            if (!this.lastKnowHitWasValid) {
-                event.setCancelled(true);
-                Boar.debug("[reach-debug] cancelled immediate reason=reach runtimeId=" + packet.getRuntimeEntityId() + " reach=" + immediateReach, Boar.DebugMessage.WARNING);
-            }
-            this.lastKnowHitWasValid = false;
-        } else {
-            this.lastKnowHitWasValid = true;
+            event.setCancelled(true);
+            Boar.debug("[reach-debug] cancelled immediate reason=reach runtimeId=" + packet.getRuntimeEntityId() + " reach=" + immediateReach, Boar.DebugMessage.WARNING);
         }
     }
 
@@ -105,8 +95,6 @@ public final class Reach extends BaseCheck implements PacketCheck {
             this.queuedHitAttacks.clear();
             return;
         }
-
-        this.lastKnowHitWasValid = false;
 
         float hitDistance = 0;
         for (Map.Entry<Pair<Vec3, Vec3>, EntityCache> entry : this.queuedHitAttacks.entrySet()) {
@@ -136,7 +124,6 @@ public final class Reach extends BaseCheck implements PacketCheck {
             }
         } else {
             this.reward();
-            this.lastKnowHitWasValid = true;
         }
 
         this.queuedHitAttacks.clear();
