@@ -129,7 +129,8 @@ public final class BoarPlayer extends PlayerData {
             prevTime = this.getLatencyUtil().prevAcceptedLatency.ms();
         }
 
-        if (System.currentTimeMillis() - prevTime > Boar.getConfig().maxLatencyWait()) {
+        long maxLatencyWait = Boar.getConfig().maxLatencyWait();
+        if (maxLatencyWait > 0 && System.currentTimeMillis() - prevTime > maxLatencyWait) {
             kick("Timed out!");
         }
     }
